@@ -1,9 +1,5 @@
 from typing import Any
-import gym.spaces
-import gym
 import numpy as np
-from gym.spaces import Discrete
-from rlgym_sim.utils.gamestates import GameState
 
 
 class LookupAction():
@@ -45,10 +41,10 @@ class LookupAction():
         actions = np.array(actions)
         return actions
 
-    def get_action_space(self) -> gym.spaces.Space:
-        return Discrete(len(self._lookup_table))
+    def get_action_space(self):
+        return len(self._lookup_table)
 
-    def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
+    def parse_actions(self, actions: Any) -> np.ndarray:
         indexes = np.array(actions, dtype=np.int32)
         indexes = np.squeeze(indexes)
         return self._lookup_table[indexes]

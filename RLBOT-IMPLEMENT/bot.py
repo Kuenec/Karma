@@ -1,16 +1,21 @@
 import numpy as np
-import torch
+
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
-from rlgym_compat import GameState
 
+from util import common_values
+from util.game_state import GameState
 from agent import Agent
 from your_obs import DefaultObs
 
 class RLGymPPOBot(BaseAgent):
 	def __init__(self, name, team, index):
 		super().__init__(name, team, index)
-		self.obs_builder = DefaultObs()
+		self.obs_builder = DefaultObs(
+            pos_coef=np.asarray([1 / common_values.SIDE_WALL_X, 1 / common_values.BACK_NET_Y, 1 / common_values.CEILING_Z]),
+            ang_coef=1 / np.pi,
+            lin_vel_coef=1 / common_values.CAR_MAX_SPEED,
+            ang_vel_coef=1 / common_values.CAR_MAX_ANG_VEL)
 		self.agent = Agent()
 		self.tick_skip = 8
 		self.game_state: GameState = None

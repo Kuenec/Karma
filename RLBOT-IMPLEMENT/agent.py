@@ -1,16 +1,10 @@
-import math
 import os
-import pickle
-
 import numpy as np
+
 import torch
-import torch.nn.functional as F
-from torch.distributions import Categorical
-from rlbot.utils.game_state_util import GameState
 
 from discrete_policy import DiscreteFF
 from your_act import LookupAction
-import your_obs
 
 # You can get the OBS size from the rlgym-ppo console print-outs when you start your bot
 OBS_SIZE = 89
@@ -33,7 +27,7 @@ class Agent:
 		with torch.no_grad():
 			action_idx, probs = self.policy.get_action(state, True)
 		
-		action = np.array(self.action_parser.parse_actions([action_idx], None))
+		action = np.array(self.action_parser.parse_actions([action_idx]))
 		if len(action.shape) == 2:
 			if action.shape[0] == 1:
 				action = action[0]

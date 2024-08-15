@@ -72,7 +72,7 @@ class Learner(object):
 
             instance_launch_delay: Union[float, None] = None,
             random_seed: int = 123,
-            n_checkpoints_to_keep: int = 5,
+            n_checkpoints_to_keep: int = 9999,
             shm_buffer_size: int = 8192,
             device: str = "cuda"):
 

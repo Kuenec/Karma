@@ -14,7 +14,7 @@ RAMP_HEIGHT = 256
 BALL_RADIUS = 92.75
 
 
-class TouchBallRewardScaledByHitForce(RewardFunction):
+class TouchBallRewardScaledByHitForce(RewardFunction): #rarely used this, i reccomend using this or either touchvelchange at the start when making a bot
     def __init__(self):
         super().__init__()
         self.max_hit_speed = 130 * KPH_TO_VEL
@@ -65,7 +65,7 @@ class GoodVelocityPlayerToBallReward(RewardFunction):
                 return 0
     
 
-class TouchVelChange(RewardFunction):
+class TouchVelChange(RewardFunction): #this is an altered version of TouchVelChange, I have added a threshold so that if the difference is less than 500uu then it gets no reward
     def __init__(self, threshold=500):
         self.last_vel = np.zeros(3)
         self.prev_vel = np.zeros(3)
@@ -95,7 +95,7 @@ class TouchVelChange(RewardFunction):
 def distance2D(x: np.array, y: np.array) -> float:
     return distance(np.array([x[0], x[1], 0]), np.array([y[0], y[1], 0]))
 
-class CradleReward(RewardFunction):
+class CradleReward(RewardFunction): #dont reccomend this either
     def __init__(self, minimum_barrier: float = 200):
         super().__init__()
         self.min_distance = minimum_barrier
@@ -144,7 +144,7 @@ class GroundedReward(RewardFunction):
 
     
 
-class CradleFlickReward(RewardFunction):
+class CradleFlickReward(RewardFunction): #do not reccomend using this
     def __init__(
         self,
         minimum_barrier: float = 400,
@@ -253,7 +253,7 @@ class LemTouchBallReward(RewardFunction):
         return 0
 
 
-class SwiftGroundDribbleReward(RewardFunction):
+class SwiftGroundDribbleReward(RewardFunction): 
     def __init__(self):
         super().__init__()
 
@@ -398,7 +398,7 @@ class AerialDistanceReward(RewardFunction):
         return rew / (2 * BACK_WALL_Y)
 
 
-class AirTouchReward(RewardFunction):
+class AirTouchReward(RewardFunction): #I've never used this reward ever throughout my entire time training this bot I have no clue if this works or not
     def __init__(self, max_time_in_air=1.75) -> None:
         super().__init__()
         self.max_time_in_air = max_time_in_air
@@ -426,7 +426,7 @@ class AirTouchReward(RewardFunction):
     
     
 
-class InAirReward(RewardFunction): # We extend the class "RewardFunction"
+class InAirReward(RewardFunction): # We extend the class "RewardFunction
     # Empty default constructor (required)
     def __init__(self):
         super().__init__()
@@ -588,7 +588,7 @@ class KickoffProximityReward(RewardFunction):
                 return -1
         return 0
     
-class CradleFlickReward(RewardFunction):
+class CradleFlickReward(RewardFunction): #really do not reccomend using this as your bot will learn to flick on its own if your dribble reward is zerosum
     def __init__(
         self,
         minimum_barrier: float = 400,

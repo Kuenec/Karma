@@ -2,8 +2,8 @@ import numpy as np
 from rlgym_sim.utils.gamestates import GameState
 from lookup_act import LookupAction
 from rlgym_ppo.util import MetricsLogger
-from state_setters import ProbabilisticStateSetter
-from customreward import KickoffProximityReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
+from state_setters import ProbabilisticStateSetter, DribblingStateSetter
+from customreward import KickoffProximityReward, ZeroSumReward, SwiftGroundDribbleReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, InAirReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
 from rlgym_sim.utils.reward_functions import CombinedReward
 from rlgym_sim.utils.reward_functions.common_rewards import (
     GoodVelocityPlayerToBallReward, VelocityBallToGoalReward, EventReward, FaceBallReward, SaveBoostReward, TouchBallReward, LiuDistanceBallToGoalReward, 
@@ -13,7 +13,6 @@ from rlgym_sim.utils.obs_builders import DefaultObs
 from rlgym_sim.utils.terminal_conditions.common_conditions import NoTouchTimeoutCondition, GoalScoredCondition
 from rlgym_sim.utils import common_values
 from rlgym_sim.utils.state_setters import RandomState, DefaultState
-
 # Add custom LogCombinedReward
 from customreward import LogCombinedReward
 
@@ -71,19 +70,25 @@ def build_rocketsim_env():
     terminal_conditions = [NoTouchTimeoutCondition(timeout_ticks), GoalScoredCondition()]
 
     reward_fn = LogCombinedReward.from_zipped(
-        (EventReward(team_goal=1, concede=-1, boost_pickup=0.13), 150),
-        (VelocityBallToGoalReward(), 7),
-        (TouchBallReward(), .1),
-        (TouchVelChange(threshold=500), 50),
-        (JumpTouchReward(min_height=120), 4),
-        (KickoffProximityReward(), 50),
-        (GoodVelocityPlayerToBallReward(), .3),
-        (SaveBoostReward(), .85),
-        (FaceBallReward(), .001),
-        (AerialDistanceReward(2, 10), 3),
-        (GroundDribbleReward(), 2),
-    )
 
+                            #EVENT REWARDS:
+
+        (EventReward(team_goal=1.35, concede=-1, boost_pickup=0.13), 150),
+        #(TouchVelChange(threshold=500), 50),
+        (JumpTouchReward(min_height=140), 40),
+
+                            #CONTINOUS REWARDS:
+
+        (VelocityBallToGoalReward(), 9),
+        (TouchBallReward(), 1),
+        (KickoffProximityReward(), 15),
+        (GoodVelocityPlayerToBallReward(), .3),
+        (SaveBoostReward(), .75),
+        (FaceBallReward(), .001),
+        (AerialDistanceReward(5, 10), 4.5),
+        (InAirReward(), .02),
+        (ZeroSumReward(SwiftGroundDribbleReward(), 0, 1.0), 6)
+    )
     global g_combined_reward
     g_combined_reward = reward_fn
 

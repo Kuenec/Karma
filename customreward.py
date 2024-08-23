@@ -235,6 +235,8 @@ class GroundDribbleReward(RewardFunction):
 
         return reward
 
+
+
     
 class LemTouchBallReward(RewardFunction):
     def init(self, aerial_weight=0):
@@ -250,6 +252,33 @@ class LemTouchBallReward(RewardFunction):
                 return height_reward
         return 0
 
+
+class SwiftGroundDribbleReward(RewardFunction):
+    def __init__(self):
+        super().__init__()
+
+        self.MIN_BALL_HEIGHT = 109.0
+        self.MAX_BALL_HEIGHT = 180.0
+        self.MAX_DISTANCE = 197.0
+        self.COEFF = 2.0
+
+    def reset(self, initial_state : GameState):
+        pass
+
+    def get_reward(self, player : PlayerData, state : GameState, previous_action):
+        if player.on_ground and state.ball.position[2] >= self.MIN_BALL_HEIGHT \
+            and state.ball.position[2] <= self.MAX_BALL_HEIGHT and np.linalg.norm(player.car_data.position - state.ball.position) < self.MAX_DISTANCE:
+            
+            player_speed = np.linalg.norm(player.car_data.linear_velocity)
+            ball_speed = np.linalg.norm(state.ball.linear_velocity)
+            player_speed_normalized = player_speed / CAR_MAX_SPEED
+            inverse_difference = 1.0 - abs(player_speed - ball_speed)
+            twosum = player_speed + ball_speed
+            speed_reward = player_speed_normalized + self.COEFF * (inverse_difference / twosum)
+
+            return speed_reward
+
+        return 0.0 #originally was 0
 
 class JumpTouchReward(RewardFunction):
     def __init__(self, min_height=92.75):
@@ -394,6 +423,7 @@ class AirTouchReward(RewardFunction):
         air_time_frac = min(self.air_time, self.max_time_in_air) / self.max_time_in_air
         reward = min(air_time_frac, height_frac)
         return reward
+    
     
 
 class InAirReward(RewardFunction): # We extend the class "RewardFunction"
@@ -621,4 +651,84 @@ class CradleFlickReward(RewardFunction):
                     return reward + 1
 
         return reward
-    
+
+class ZeroSumReward(RewardFunction):
+    '''
+    child_reward: The underlying reward function
+    team_spirit: How much to share this reward with teammates (0-1)
+    opp_scale: How to scale the penalty we get for the opponents getting this reward (usually 1)
+    '''
+    def __init__(self, child_reward: RewardFunction, team_spirit, opp_scale = 1.0):
+        self.child_reward = child_reward # type: RewardFunction
+        self.team_spirit = team_spirit
+        self.opp_scale = opp_scale
+
+        self._update_next = True
+        self._rewards_cache = {}
+
+    def reset(self, initial_state: GameState):
+        self.child_reward.reset(initial_state)
+
+    def pre_step(self, state: GameState):
+        self.child_reward.pre_step(state)
+
+        # Mark the next get_reward call as being the first reward call of the step
+        self._update_next = True
+
+    def update(self, state: GameState, is_final):
+        self._rewards_cache = {}
+
+        '''
+        Each player's reward is calculated using this equation:
+        reward = individual_rewards * (1-team_spirit) + avg_team_reward * team_spirit - avg_opp_reward * opp_scale
+        '''
+
+        # Get the individual rewards from each player while also adding them to that team's reward list
+        individual_rewards = {}
+        team_reward_lists = [ [], [] ]
+        for player in state.players:
+            if is_final:
+                reward = self.child_reward.get_final_reward(player, state, None)
+            else:
+                reward = self.child_reward.get_reward(player, state, None)
+            individual_rewards[player.car_id] = reward
+            team_reward_lists[int(player.team_num)].append(reward)
+
+        # If a team has no players, add a single 0 to their team rewards so the average doesn't break
+        for i in range(2):
+            if len(team_reward_lists[i]) == 0:
+                team_reward_lists[i].append(0)
+
+        # Turn the team-sorted reward lists into averages for each time
+        # Example:
+        #    Before: team_rewards = [ [1, 3], [4, 8] ]
+        #    After:  team_rewards = [ 2, 6 ]
+        team_rewards = np.average(team_reward_lists, 1)
+
+        # Compute and cache:
+        # reward = individual_rewards * (1-team_spirit)
+        #          + avg_team_reward * team_spirit
+        #          - avg_opp_reward * opp_scale
+        for player in state.players:
+            self._rewards_cache[player.car_id] = (
+                    individual_rewards[player.car_id] * (1 - self.team_spirit)
+                    + team_rewards[int(player.team_num)] * self.team_spirit
+                    - team_rewards[1 - int(player.team_num)] * self.opp_scale
+            )
+
+    '''
+    I made get_reward and get_final_reward both call get_reward_multi, using the "is_final" argument to distinguish
+    Otherwise I would have to rewrite this function for final rewards, which is lame
+    '''
+    def get_reward_multi(self, player: PlayerData, state: GameState, previous_action: np.ndarray, is_final) -> float:
+        # If this is the first get_reward call this step, we need to update the rewards for all players
+        if self._update_next:
+            self.update(state, is_final)
+            self._update_next = False
+        return self._rewards_cache[player.car_id]
+
+    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
+        return self.get_reward_multi(player, state, previous_action, False)
+
+    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
+        return self.get_reward_multi(player, state, previous_action, True)

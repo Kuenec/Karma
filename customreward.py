@@ -135,7 +135,7 @@ class GoodVelocityPlayerToBallReward(RewardFunction):
                 return 0
     
 
-class TouchVelChange(RewardFunction):
+class TouchVelChange(RewardFunction): #This is with the treshold, Meaning that a Ball has to be this fast minimum to recieve reward
     def __init__(self, threshold=500):
         self.last_vel = np.zeros(3)
         self.prev_vel = np.zeros(3)

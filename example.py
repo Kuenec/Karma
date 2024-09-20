@@ -3,7 +3,7 @@ from rlgym_sim.utils.gamestates import GameState
 from lookup_act import LookupAction
 from rlgym_ppo.util import MetricsLogger
 from state_setters import ProbabilisticStateSetter, DribblingStateSetter
-from customreward import Flick45DegreeReward, Flick45DegreeRewardV2,Car45DegreeFlickReward,Car45DegreeFlickRewardV6,Car45DegreeFlickRewardV7, QuickestTouchReward, GoalSpeedAndPlacementReward, KickoffProximityReward, ZeroSumReward, SwiftGroundDribbleReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, InAirReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
+from customreward import Car45DegreeFlickRewardV7, QuickestTouchReward, GoalSpeedAndPlacementReward, KickoffProximityReward, ZeroSumReward, SwiftGroundDribbleReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, InAirReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
 from rlgym_sim.utils.reward_functions import CombinedReward
 from rlgym_sim.utils.reward_functions.common_rewards import (
     GoodVelocityPlayerToBallReward, VelocityBallToGoalReward, EventReward, FaceBallReward, SaveBoostReward, TouchBallReward, LiuDistanceBallToGoalReward, 

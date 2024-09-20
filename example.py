@@ -3,7 +3,7 @@ from rlgym_sim.utils.gamestates import GameState
 from lookup_act import LookupAction
 from rlgym_ppo.util import MetricsLogger
 from state_setters import ProbabilisticStateSetter, DribblingStateSetter
-from customreward import KickoffProximityReward, ZeroSumReward, SwiftGroundDribbleReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, InAirReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
+from customreward import Flick45DegreeReward, Flick45DegreeRewardV2,Car45DegreeFlickReward,Car45DegreeFlickRewardV6,Car45DegreeFlickRewardV7, QuickestTouchReward, GoalSpeedAndPlacementReward, KickoffProximityReward, ZeroSumReward, SwiftGroundDribbleReward, AirTouchReward, CradleFlickReward, LemTouchBallReward, RetreatReward, DistanceReward, AerialDistanceReward, InAirReward, TouchVelChange, CradleReward, GroundedReward, GroundDribbleReward, JumpTouchReward
 from rlgym_sim.utils.reward_functions import CombinedReward
 from rlgym_sim.utils.reward_functions.common_rewards import (
     GoodVelocityPlayerToBallReward, VelocityBallToGoalReward, EventReward, FaceBallReward, SaveBoostReward, TouchBallReward, LiuDistanceBallToGoalReward, 
@@ -75,18 +75,19 @@ def build_rocketsim_env():
 
         (EventReward(team_goal=1.35, concede=-1, boost_pickup=0.13), 150),
         #(TouchVelChange(threshold=500), 50),
-        (JumpTouchReward(min_height=140), 40),
-
+        (JumpTouchReward(min_height=120), 40), 
+        (GoalSpeedAndPlacementReward(), 15),
+        
                             #CONTINOUS REWARDS:
-
-        (VelocityBallToGoalReward(), 9),
-        (TouchBallReward(), 1),
+        (VelocityBallToGoalReward(), 12),
+        (TouchBallReward(), 1.25),
         (KickoffProximityReward(), 15),
         (GoodVelocityPlayerToBallReward(), .3),
-        (SaveBoostReward(), .75),
+        (SaveBoostReward(), 1.5),
         (FaceBallReward(), .001),
         (AerialDistanceReward(5, 10), 4.5),
-        (InAirReward(), .02),
+        (LemTouchBallReward(), 2.5),
+        (InAirReward(), .027),
         (ZeroSumReward(SwiftGroundDribbleReward(), 0, 1.0), 6)
     )
     global g_combined_reward

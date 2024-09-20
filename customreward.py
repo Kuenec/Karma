@@ -1,4 +1,4 @@
-#There is Probably some duplicated of some rewards in this file some may be exactly the same reward or some may have been ones i altered such as touchvell change with the threshold
+#There is Probably some duplicates of some rewards in this file some may be exactly the same reward or some may have been ones i altered such as touchvell change with the threshold
 import math
 from rlgym_sim.utils.reward_functions import RewardFunction
 from rlgym_sim.utils.reward_functions.common_rewards.player_ball_rewards import FaceBallReward

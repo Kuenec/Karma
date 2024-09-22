@@ -468,7 +468,7 @@ class AerialDistanceReward(RewardFunction):
         return rew / (2 * BACK_WALL_Y)
 
 
-class GoalSpeedAndPlacementReward(RewardFunction):
+class GoalSpeedAndPlacementReward(RewardFunction): #this does not work if you are trying to train placement you could do initial state setters to get the state the bot was previously in before being scored on and letting it try something different
     def __init__(self):
         self.prev_score_blue = 0
         self.prev_score_orange = 0

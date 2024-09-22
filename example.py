@@ -76,7 +76,7 @@ def build_rocketsim_env():
         (EventReward(team_goal=1.35, concede=-1, boost_pickup=0.13), 150),
         #(TouchVelChange(threshold=500), 50),
         (JumpTouchReward(min_height=120), 40), 
-        (GoalSpeedAndPlacementReward(), 15),
+        (GoalSpeedAndPlacementReward(), 15), #this does not work
         
                             #CONTINOUS REWARDS:
         (VelocityBallToGoalReward(), 12),

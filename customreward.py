@@ -174,7 +174,7 @@ class TouchVelChange(RewardFunction): #Good: This is with the treshold, Meaning 
 def distance2D(x: np.array, y: np.array) -> float:
     return distance(np.array([x[0], x[1], 0]), np.array([y[0], y[1], 0]))
 
-class CradleReward(RewardFunction):
+class CradleReward(RewardFunction): #SHITTTTTTT:  Never fucking use this. For dribbles, just give your bot TouchReward it’ll learn on its own. For flicks, zero-sum TouchReward once it can dribble
     def __init__(self, minimum_barrier: float = 200):
         super().__init__()
         self.min_distance = minimum_barrier
@@ -2501,4 +2501,5 @@ class AirReward(RewardFunction): #Undetermined: Looks to be the same as In air r
 
 if __name__ == "__main__":
     pass
+
 

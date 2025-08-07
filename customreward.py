@@ -1,4 +1,13 @@
-#There is Probably some duplicates of some rewards in this file some may be exactly the same reward or some may have been ones i altered such as touchvell change with the threshold
+#Note:
+#Some rewards may be duplicated or slightly altered versions of others (ex: TouchVelChange with a threshold tweak).
+#I will seperate rewards in 3 Labels Below:
+
+#Labels:
+
+#Good – Personally tested and good to use, especially for higher level bots
+#Shit – Bad rewards/not recommended
+#Undetermined – Untested or unknown; use at your own discretion.
+
 import math
 from rlgym_sim.utils.reward_functions import RewardFunction
 from rlgym_sim.utils.reward_functions.common_rewards.player_ball_rewards import FaceBallReward
@@ -84,7 +93,7 @@ def scalar_speed_towards_ball(player :PlayerData, state: GameState) -> float:
     scalar_vel_towards_ball = float(np.dot(norm_pos_diff, vel))
     return scalar_vel_towards_ball
 
-class TouchBallRewardScaledByHitForce(RewardFunction):
+class TouchBallRewardScaledByHitForce(RewardFunction): #Undetermined: Didn't work well for me, but others had success. I preferred TouchVelChange with my threshold.
     def __init__(self):
         super().__init__()
         self.max_hit_speed = 130 * KPH_TO_VEL
@@ -107,7 +116,7 @@ class TouchBallRewardScaledByHitForce(RewardFunction):
             return reward
         return 0
     
-class GoodVelocityPlayerToBallReward(RewardFunction):
+class GoodVelocityPlayerToBallReward(RewardFunction): #Good: Works well, but SpeedTowardsBall is just as effective.
     def __init__(self, use_scalar_projection=False):
         super().__init__()
         self.use_scalar_projection = use_scalar_projection
@@ -135,7 +144,7 @@ class GoodVelocityPlayerToBallReward(RewardFunction):
                 return 0
     
 
-class TouchVelChange(RewardFunction): #This is with the treshold, Meaning that a Ball has to be this fast minimum to recieve reward
+class TouchVelChange(RewardFunction): #Good: This is with the treshold, Meaning that a Ball has to be this fast minimum to recieve reward
     def __init__(self, threshold=500):
         self.last_vel = np.zeros(3)
         self.prev_vel = np.zeros(3)
@@ -198,7 +207,7 @@ class CradleReward(RewardFunction):
 
         return 0
     
-class GroundedReward(RewardFunction):
+class GroundedReward(RewardFunction): #Good: Works well, but I don’t use it personally. Useful if your bot jumps too much.
     def __init__(
         self,
     ):
@@ -214,8 +223,8 @@ class GroundedReward(RewardFunction):
 
     
 
-class CradleFlickReward(RewardFunction):
-    def __init__(
+class CradleFlickReward(RewardFunction): #Shit: Overly complex and useless. For flicks, use TouchBall or Dribble rewards early on, then zero sum them once dribbling is learned your bot will flick naturally.
+    def __init__(                        #Zerosumming touch helped mine outperform Nexto. Avoid flick rewards; use Dribble reward only if your bot is more complex, as touch reward is just as good. 
         self,
         minimum_barrier: float = 400,
         max_vel_diff: float = 400,
@@ -278,7 +287,7 @@ class CradleFlickReward(RewardFunction):
 
         return reward
     
-class GroundDribbleReward(RewardFunction):
+class GroundDribbleReward(RewardFunction): #Undetermined: I'd reccomend using touch reward over this as they learn dribbling on there own most of the time with just touch reward
     def __init__(self, distance_threshold: float = 162.5, ball_height_lower_threshold: float = 110.0):
         super().__init__()
         self.DISTANCE_THRESHOLD = distance_threshold
@@ -308,8 +317,8 @@ class GroundDribbleReward(RewardFunction):
 
 
     
-class LemTouchBallReward(RewardFunction):
-    def init(self, aerial_weight=0):
+class LemTouchBallReward(RewardFunction): #Good: Helps with aerials, but zerosumming TouchBall is often enough. For extra encouragement, use this, JumpTouchReward,
+    def init(self, aerial_weight=0):      #or increase gamma in small increments until it reaches 15 sec half life: bots learn high aerials naturally with higher gamma.
         self.aerial_weight = aerial_weight
 
     def reset(self, initial_state: GameState):
@@ -323,7 +332,7 @@ class LemTouchBallReward(RewardFunction):
         return 0
 
 
-class SwiftGroundDribbleReward(RewardFunction):
+class SwiftGroundDribbleReward(RewardFunction): #Good: Works fine, but only use if your bot is doing more complex actions like air dribbles. TouchBall usually leads to dribbling on its own.
     def __init__(self):
         super().__init__()
 
@@ -368,7 +377,7 @@ class JumpTouchReward(RewardFunction):
         return 0
     
 
-class RetreatReward(RewardFunction):
+class RetreatReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.defense_target = np.array(BLUE_GOAL_BACK)
@@ -396,7 +405,7 @@ class RetreatReward(RewardFunction):
             reward = np.dot(norm_pos_diff, norm_vel)
         return reward
     
-class DistanceReward(RewardFunction):
+class DistanceReward(RewardFunction): #Undetermined
     def __init__(self, dist_max=1000, max_reward=2):
         super().__init__()
         self.dist_max = dist_max
@@ -425,7 +434,7 @@ class DistanceReward(RewardFunction):
     RAMP_HEIGHT = 256
 
 
-class AerialDistanceReward(RewardFunction):
+class AerialDistanceReward(RewardFunction): #Undertimined: Poorly tested
     def __init__(self, height_scale: float, distance_scale: float):
         super().__init__()
         self.height_scale = height_scale
@@ -468,7 +477,7 @@ class AerialDistanceReward(RewardFunction):
         return rew / (2 * BACK_WALL_Y)
 
 
-class GoalSpeedAndPlacementReward(RewardFunction): #this does not work if you are trying to train placement you could do initial state setters to get the state the bot was previously in before being scored on and letting it try something different
+class GoalSpeedAndPlacementReward(RewardFunction): #This won’t work for placement training. Create a custom reward that scales with how far you score from the opponent
     def __init__(self):
         self.prev_score_blue = 0
         self.prev_score_orange = 0
@@ -526,7 +535,7 @@ class SpeedReward(RewardFunction):
         return 0
 
 
-class QuickestTouchReward(RewardFunction):
+class QuickestTouchReward(RewardFunction): #Undetermined
     def __init__(self, timeout=0, tick_skip=8, num_agents=1):
         self.timeout = timeout * 120 # convert to ticks
         self.tick_skip = tick_skip
@@ -553,7 +562,7 @@ class QuickestTouchReward(RewardFunction):
         # print("QuickestTouchReward.FinalReward(): ", reward)
         return reward
 
-class SustainedVelocityPlayerToBallReward(RewardFunction):
+class SustainedVelocityPlayerToBallReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.comulative_reward = 0
@@ -584,7 +593,7 @@ class SustainedVelocityPlayerToBallReward(RewardFunction):
     def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
         # print("VelocityPlayerToBall: Cumulative: ", self.comulative_reward)
         return 0
-class AccelerationPlayerToBallReward(RewardFunction):
+class AccelerationPlayerToBallReward(RewardFunction): #Undetermined
     def __init__(self, tick_skip=8):
         super().__init__()
         self.tick_skip = tick_skip
@@ -619,7 +628,7 @@ class AccelerationPlayerToBallReward(RewardFunction):
         # print("AccelerationPlayerToBall: Cumulative: ", self.cumulative_reward)
         return 0
 
-class SpeedOnBallTouchReward(RewardFunction):
+class SpeedOnBallTouchReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.cumulative_reward = 0
@@ -641,7 +650,7 @@ class SpeedOnBallTouchReward(RewardFunction):
         # print("SpeedOnBallTouchReward: Cumulative: ", self.cumulative_reward)
         return 0
 
-class FaceBallReward(RewardFunction):
+class FaceBallReward(RewardFunction): #Good
     def __init__(self):
         super().__init__()
         self.cumulative_reward = 0
@@ -661,7 +670,7 @@ class FaceBallReward(RewardFunction):
         # print("FaceBallReward: Cumulative: ", self.cumulative_reward)
         return 0
 
-class OnGroundReward(RewardFunction):
+class OnGroundReward(RewardFunction): #Undetermined: Similar to grounded reward; likely only useful if your bot jumps too much
     def __init__(self):
         super().__init__()
         self.cumulative_reward = 0
@@ -684,7 +693,7 @@ class OnGroundReward(RewardFunction):
     
     
 
-class AirTouchReward(RewardFunction):
+class AirTouchReward(RewardFunction): #Undetermined
     def __init__(self, max_time_in_air=1.75) -> None:
         super().__init__()
         self.max_time_in_air = max_time_in_air
@@ -712,7 +721,7 @@ class AirTouchReward(RewardFunction):
     
     
 
-class InAirReward(RewardFunction): # We extend the class "RewardFunction"
+class Reward(RewardFunction): # We extend the class "RewardFunction" #Good
     # Empty default constructor (required)
     def __init__(self):
         super().__init__()
@@ -735,8 +744,9 @@ class InAirReward(RewardFunction): # We extend the class "RewardFunction"
             # We are on ground, don't give any reward
             return 0
         
-class LogCombinedReward(RewardFunction):
-    """
+class LogCombinedReward(RewardFunction): #Good: Please, for the love of god, use this instead of the default CombinedReward. Your code will be way cleaner
+                                         #I swear if someone treats this as an actual rweward to give your bot im going to lose it 
+    """                                  
     A reward composed of multiple rewards.
     """
 
@@ -842,7 +852,7 @@ class LogCombinedReward(RewardFunction):
 
         return float(np.dot(self.reward_weights, rewards))
 
-class VelocityPlayerToNearestPlayerReward(RewardFunction):
+class VelocityPlayerToNearestPlayerReward(RewardFunction): #Undetermined
     def __init__(self, use_scalar_projection=False):
         super().__init__()
         self.use_scalar_projection = use_scalar_projection
@@ -879,7 +889,7 @@ class VelocityPlayerToNearestPlayerReward(RewardFunction):
         
     
     # reward.py
-class KickoffProximityReward(RewardFunction):
+class KickoffProximityReward(RewardFunction): #Good: Taught my bot how to do speed flip kickoff
     def __init__(self):
         super().__init__()
 
@@ -908,7 +918,7 @@ class KickoffProximityReward(RewardFunction):
         return 0
     
 
-class ZeroSumReward(RewardFunction):
+class ZeroSumReward(RewardFunction): #Very Good: This will carry your bot to GC, especially for dribble flick playstyles. Leaving opponent scale and team spirit at 1 works well. THIS IS A WRAPPER!!!
     '''
     child_reward: The underlying reward function
     team_spirit: How much to share this reward with teammates (0-1)
@@ -990,7 +1000,7 @@ class ZeroSumReward(RewardFunction):
         return self.get_reward_multi(player, state, previous_action, True)
     
 
-class StarterReward(RewardFunction):
+class StarterReward(RewardFunction): #undetermined: looks ass though
     def __init__(self):
         super().__init__()
         self.goal_reward = 10
@@ -1014,7 +1024,7 @@ class StarterReward(RewardFunction):
         return self.rew.get_reward(player, state, previous_action)
 
 
-class LavaFloorReward(RewardFunction):
+class LavaFloorReward(RewardFunction): #Good: Helps if your bot is too grounded and needs to flip more
     @staticmethod
     def get_reward(player: PlayerData, state: GameState, previous_action: np.ndarray, optional_data=None):
         if player.on_ground and player.car_data.position[2] < 50:
@@ -1025,7 +1035,7 @@ class LavaFloorReward(RewardFunction):
     def reset(initial_state: GameState):
         pass
 
-class EventReward(RewardFunction):
+class EventReward(RewardFunction): #Good
     def __init__(self, goal=0., team_goal=0., concede=-0., touch=0., shot=0., save=0., demo=0., boost_pickup=0.):
         """
         :param goal: reward for goal scored by player.
@@ -1072,7 +1082,7 @@ class EventReward(RewardFunction):
         return reward
 
 
-class VelocityBallToGoalReward(RewardFunction):
+class VelocityBallToGoalReward(RewardFunction): #Good
     def __init__(self, own_goal=False, use_scalar_projection=False):
         super().__init__()
         self.own_goal = own_goal
@@ -1095,7 +1105,7 @@ class VelocityBallToGoalReward(RewardFunction):
         return float(np.dot(norm_pos_diff, norm_vel))
 
 
-class VelocityPlayerToBallReward(RewardFunction):
+class VelocityPlayerToBallReward(RewardFunction): #Good: Speed towards Ball reward often preferred though
     def __init__(self, use_scalar_projection=False):
         super().__init__()
         self.use_scalar_projection = use_scalar_projection
@@ -1111,7 +1121,7 @@ class VelocityPlayerToBallReward(RewardFunction):
         return float(np.dot(norm_pos_diff, norm_vel))
 
 
-class RuleOnePunishment(RewardFunction):
+class RuleOnePunishment(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState) -> None:
         pass
 
@@ -1134,7 +1144,7 @@ class RuleOnePunishment(RewardFunction):
         return 0
 
 
-class DemoPunish(RewardFunction):
+class DemoPunish(RewardFunction): #Undetermined: Just Zerosum a demo reward please
     def __init__(self) -> None:
         super().__init__()
         self.demo_statuses = [True for _ in range(64)]
@@ -1151,7 +1161,7 @@ class DemoPunish(RewardFunction):
         return reward
 
 
-class BoostAcquisitions(RewardFunction):
+class BoostAcquisitions(RewardFunction): #undetermined
     def __init__(self) -> None:
         super().__init__()
         self.boost_reserves = 1
@@ -1167,7 +1177,7 @@ class BoostAcquisitions(RewardFunction):
         return 0 if boost_gain <= 0 else boost_gain
 
 
-class LandingRecoveryReward(RewardFunction):
+class LandingRecoveryReward(RewardFunction): #Undetermined: Energy Reward is probably way better (not in this repo though)
     def __init__(self) -> None:
         super().__init__()
         self.up = np.array([0, 0, 1])
@@ -1202,7 +1212,7 @@ class LandingRecoveryReward(RewardFunction):
         return reward
 
 
-class AerialNavigation(RewardFunction):
+class AerialNavigation(RewardFunction): #Undetermined: I think I tested this and it was bad, but honestly just increase gamma or zero sum the TouchBall reward instead
     def __init__(
         self, ball_height_min=400, player_height_min=200, beginner=True
     ) -> None:
@@ -1251,7 +1261,7 @@ class AerialNavigation(RewardFunction):
         return max(reward, 0)
 
 
-class AerialTraining(RewardFunction):
+class AerialTraining(RewardFunction): #Undetermined: Same advice as above
     def __init__(self, ball_height_min=400, player_min_height=300) -> None:
         super().__init__()
         self.vel_reward = VelocityPlayerToBallReward()
@@ -1275,7 +1285,7 @@ class AerialTraining(RewardFunction):
         return 0
 
 
-class SaveBoostReward(RewardFunction):
+class SaveBoostReward(RewardFunction): #Good: Effective but has exploits; still good for training a GC level bot.
     def reset(self, initial_state: GameState):
         pass
 
@@ -1285,7 +1295,7 @@ class SaveBoostReward(RewardFunction):
         return player.boost_amount * 0.01
 
 
-class SequentialRewards(RewardFunction):
+class SequentialRewards(RewardFunction): #Undetermined
     def __init__(self, rewards: list, steps: list):
         super().__init__()
         self.rewards_list = rewards
@@ -1314,7 +1324,7 @@ class SequentialRewards(RewardFunction):
         )
 
 
-class SelectiveChaseReward(RewardFunction):
+class SelectiveChaseReward(RewardFunction): #Undetermined
     def __init__(self, distance_req: float = 500):
         super().__init__()
         self.vel_dir_reward = VelocityPlayerToBallReward()
@@ -1334,7 +1344,7 @@ class SelectiveChaseReward(RewardFunction):
         return 0
 
 
-class BoostDiscipline(RewardFunction):
+class BoostDiscipline(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -1344,7 +1354,7 @@ class BoostDiscipline(RewardFunction):
         return float(-previous_action[6])
 
 
-class BoostTrainer(RewardFunction):
+class BoostTrainer(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -1352,7 +1362,7 @@ class BoostTrainer(RewardFunction):
         return previous_action[6] == 0
 
 
-class OmniBoostDiscipline(RewardFunction):
+class OmniBoostDiscipline(RewardFunction): #Undetermined
     def __init__(self, aerial_forgiveness=False):
         super().__init__()
         self.values = [0 for _ in range(64)]
@@ -1368,7 +1378,7 @@ class OmniBoostDiscipline(RewardFunction):
         return 0
 
 
-class ControllerModerator(RewardFunction):
+class ControllerModerator(RewardFunction): #Undetermined: wtf is this
     def __init__(self, index: int = 0, val: int = 0, reward: float = -1):
         super().__init__()
         self.index = index
@@ -1386,7 +1396,7 @@ class ControllerModerator(RewardFunction):
         return 0
 
 
-class MillennialKickoffReward(RewardFunction):
+class MillennialKickoffReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
 
@@ -1409,7 +1419,7 @@ class MillennialKickoffReward(RewardFunction):
         return 0
 
 
-class KickoffReward(RewardFunction):
+class KickoffReward(RewardFunction): #Undetermined
     def __init__(self, boost_punish: bool = True):
         super().__init__()
         self.vel_dir_reward = VelocityPlayerToBallReward()
@@ -1459,7 +1469,7 @@ class KickoffReward(RewardFunction):
         return reward
 
 
-class DistanceReward(RewardFunction):
+class DistanceReward(RewardFunction): #Undetermined
     def __init__(self, dist_max=1000, max_reward=2):
         super().__init__()
         self.dist_max = dist_max
@@ -1486,7 +1496,7 @@ class DistanceReward(RewardFunction):
         return 1 - (distance / self.dist_max)
 
 
-class TeamSpacingReward(RewardFunction):
+class TeamSpacingReward(RewardFunction): #Undetermined: Often Team spirit is enough to teach them how to spcae on their own though
     def __init__(self, min_spacing: float = 1000) -> None:
         super().__init__()
         self.min_spacing = clamp(math.inf, 0.0000001, min_spacing)
@@ -1510,7 +1520,7 @@ class TeamSpacingReward(RewardFunction):
         return self.spacing_reward(player, state)
 
 
-class ThreeManRewards(RewardFunction):
+class ThreeManRewards(RewardFunction): #Undetermined
     def __init__(self, min_spacing: float = 1500):
         super().__init__()
         self.min_spacing = min_spacing
@@ -1572,7 +1582,7 @@ class SpeedReward(RewardFunction):
         return min(car_speed, 1)
 
 
-class ForwardBiasReward(RewardFunction):
+class ForwardBiasReward(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -1582,7 +1592,7 @@ class ForwardBiasReward(RewardFunction):
         return player.car_data.forward().dot(normalize(player.car_data.linear_velocity))
 
 
-class FlatSpeedReward(RewardFunction):
+class FlatSpeedReward(RewardFunction): #Undtermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -1592,7 +1602,7 @@ class FlatSpeedReward(RewardFunction):
         return abs(np.linalg.norm(player.car_data.linear_velocity[:2])) / 2300
 
 
-class NaiveSpeedReward(RewardFunction):
+class NaiveSpeedReward(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -1601,7 +1611,7 @@ class NaiveSpeedReward(RewardFunction):
     ) -> float:
         return abs(np.linalg.norm(player.car_data.linear_velocity)) / 2300
 
-class JumpTouchReward(RewardFunction):
+class JumpTouchReward(RewardFunction): #Good: This is mainly for air encouragement works fine
     def __init__(self, min_height=92.75):
         self.min_height = min_height
         self.max_height = 2044-92.75
@@ -1619,7 +1629,7 @@ class JumpTouchReward(RewardFunction):
         return 0
 
 
-class CenterReward(RewardFunction):
+class CenterReward(RewardFunction): #Undetermined
     def __init__(self, centered_distance=1200, punish_area_exit=False, non_participation_reward=0.0):
         self.centered_distance = centered_distance
         self.punish_area_exit = punish_area_exit
@@ -1657,7 +1667,7 @@ class CenterReward(RewardFunction):
         return reward
 
 
-class ClearReward(RewardFunction):
+class ClearReward(RewardFunction): #Undetermined
     def __init__(self, protected_distance=1200, punish_area_entry=False, non_participation_reward=0.0):
         self.protected_distance = protected_distance
         self.punish_area_entry=punish_area_entry
@@ -1694,7 +1704,7 @@ class ClearReward(RewardFunction):
                     reward -= 1
         return reward
 
-class WallTouchReward(RewardFunction):
+class WallTouchReward(RewardFunction): #Undetermined
     def __init__(self, min_height=92, exp=0.2):
         self.min_height = min_height
         self.exp = exp
@@ -1711,7 +1721,7 @@ class WallTouchReward(RewardFunction):
 
         return 0
 
-class TouchVelChange(RewardFunction): #this is regular touchvel change without my threshold added
+class TouchVelChange(RewardFunction): #Good: Works fine, though I prefer using a minimum threshold (included in this file).
     def __init__(self):
         self.last_vel = np.zeros(3)
 
@@ -1730,7 +1740,7 @@ class TouchVelChange(RewardFunction): #this is regular touchvel change without m
 
         return reward
 
-class HeightTouchReward(RewardFunction):
+class HeightTouchReward(RewardFunction): #Undetermined
     def __init__(self, min_height=92, exp=0.2, coop_dist=0):
         super().__init__()
         self.min_height = min_height
@@ -1766,7 +1776,7 @@ class HeightTouchReward(RewardFunction):
 
         return reward
 
-class ModifiedTouchReward(RewardFunction):
+class ModifiedTouchReward(RewardFunction): #Undetermined
     def __init__(self, min_change: float = 300, min_height: float = 200, vel_scale: float = 1, touch_scale: float = 1, jump_reward: bool = False, jump_scale: float = 0.1, tick_min: int = 0):
         super().__init__()
         self.psr = PowerShotReward(min_change)
@@ -1808,7 +1818,7 @@ class ModifiedTouchReward(RewardFunction):
         return reward
 
 
-class PowerShotReward(RewardFunction):
+class PowerShotReward(RewardFunction): #Undetermined
     def __init__(self, min_change: float = 300):
         super().__init__()
         self.min_change = min_change
@@ -1833,7 +1843,7 @@ class PowerShotReward(RewardFunction):
         return reward
 
 
-class FlipCorrecter(RewardFunction):
+class FlipCorrecter(RewardFunction): #Undetermined: Energy reward probably better
     def __init__(self) -> None:
         self.last_velocity = np.zeros(3)
         self.armed = False
@@ -1868,7 +1878,7 @@ class FlipCorrecter(RewardFunction):
         return reward
 
 
-class TouchBallTweakedReward(RewardFunction):
+class TouchBallTweakedReward(RewardFunction): #Undetermined
     def __init__(
         self,
         min_touch: float = 0.05,
@@ -1936,7 +1946,7 @@ class TouchBallTweakedReward(RewardFunction):
         return reward
 
 
-class TouchBallReward(RewardFunction):
+class TouchBallReward(RewardFunction): #undetermined
     def __init__(
         self,
         min_touch: float = 0.05,
@@ -2002,7 +2012,7 @@ class TouchBallReward(RewardFunction):
         return reward
 
 
-class PushReward(RewardFunction):
+class PushReward(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2053,7 +2063,7 @@ class BallYCoordinateReward(RewardFunction):
             ) ** self.exponent
 
 
-class VersatileBallVelocityReward(RewardFunction):
+class VersatileBallVelocityReward(RewardFunction): #undetermined
     def __init__(self):
         super().__init__()
         self.offensive_reward = VelocityBallToGoalReward()
@@ -2073,7 +2083,7 @@ class VersatileBallVelocityReward(RewardFunction):
             return self.offensive_reward.get_reward(player, state, previous_action)
 
 
-class DefenderReward(RewardFunction):
+class DefenderReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.enemy_goals = 0
@@ -2100,7 +2110,7 @@ class DefenderReward(RewardFunction):
                 reward -= clamp(1, 0, dist/10000)
         return reward
 
-class PositiveWrapperReward(RewardFunction):
+class PositiveWrapperReward(RewardFunction): #Undetermined: Im not sure why you would want this though
     """A simple wrapper to ensure a reward only returns positive values"""
     def __init__(self, base_reward):
         super().__init__()
@@ -2117,7 +2127,7 @@ class PositiveWrapperReward(RewardFunction):
         return 0 if rew < 0 else rew
 
 
-class PositiveBallVelToGoalReward(RewardFunction):
+class PositiveBallVelToGoalReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.rew = VelocityBallToGoalReward()
@@ -2130,7 +2140,7 @@ class PositiveBallVelToGoalReward(RewardFunction):
     ) -> float:
         return clamp(1, 0, self.rew.get_reward(player, state, previous_action))
 
-class PositivePlayerVelToBallReward(RewardFunction):
+class PositivePlayerVelToBallReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.rew = VelocityPlayerToBallReward()
@@ -2144,7 +2154,7 @@ class PositivePlayerVelToBallReward(RewardFunction):
         return clamp(1, 0, self.rew.get_reward(player, state, previous_action))
 
 
-class DefenseTrainer(RewardFunction):
+class DefenseTrainer(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2164,7 +2174,7 @@ class DefenseTrainer(RewardFunction):
         return -clamp(1, 0, float(norm_pos_diff.dot(vel)*scale))
 
 
-class VelocityBallDefense(RewardFunction):
+class VelocityBallDefense(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2183,7 +2193,7 @@ class VelocityBallDefense(RewardFunction):
         return float(norm_pos_diff.dot(vel))
 
 
-class CradleReward(RewardFunction):
+class CradleReward(RewardFunction): #SHIT: Never use this. Just use TouchReward; the bot will learn dribbles naturally. Zero-sum it afterward to teach flicks
     def __init__(self, minimum_barrier: float = 200):
         super().__init__()
         self.min_distance = minimum_barrier
@@ -2217,7 +2227,7 @@ class CradleReward(RewardFunction):
         return 0
 
 
-class CradleFlickReward(RewardFunction):
+class CradleFlickReward(RewardFunction): #SHIT: Never use this. Zero-sum touch after It can dribble to teach flicks
     def __init__(
         self,
         minimum_barrier: float = 400,
@@ -2282,7 +2292,7 @@ class CradleFlickReward(RewardFunction):
         return reward
 
 
-class TweakedVelocityPlayerToGoalReward(RewardFunction):
+class TweakedVelocityPlayerToGoalReward(RewardFunction): #Undetermined
     def __init__(self, max_leeway=100, default_power=0.0) -> None:
         super().__init__()
         self.max_leeway = max_leeway
@@ -2313,7 +2323,7 @@ class TweakedVelocityPlayerToGoalReward(RewardFunction):
         return float(np.dot(norm_pos_diff, vel))
 
 
-class ChallengeReward(RewardFunction):
+class ChallengeReward(RewardFunction): #Undetermined
     def __init__(self, challenge_distance=300):
         super().__init__()
         self.challenge_distance = challenge_distance
@@ -2347,7 +2357,7 @@ class ChallengeReward(RewardFunction):
         return reward
 
 
-class OncePerStepRewardWrapper(RewardFunction):
+class OncePerStepRewardWrapper(RewardFunction): #Undetermined
     def __init__(self, reward):
         super().__init__()
         self.reward = reward
@@ -2369,7 +2379,7 @@ class OncePerStepRewardWrapper(RewardFunction):
         return self.rv
 
 
-class RetreatReward(RewardFunction):
+class RetreatReward(RewardFunction): #Undetermined
     def __init__(self):
         super().__init__()
         self.defense_target = np.array(BLUE_GOAL_BACK)
@@ -2398,7 +2408,7 @@ class RetreatReward(RewardFunction):
         return reward
 
 
-class PositioningReward(RewardFunction):
+class PositioningReward(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2418,7 +2428,7 @@ class PositioningReward(RewardFunction):
         return reward
 
 
-class GoalboxPenalty(RewardFunction):
+class GoalboxPenalty(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2430,7 +2440,7 @@ class GoalboxPenalty(RewardFunction):
         return 0
 
 
-class PlayerAlignment(RewardFunction):
+class PlayerAlignment(RewardFunction): #Undetermined
     def reset(self, initial_state: GameState):
         pass
 
@@ -2454,7 +2464,7 @@ class PlayerAlignment(RewardFunction):
         return reward
 
 
-class GroundedReward(RewardFunction):
+class GroundedReward(RewardFunction): #Good: if your bot flips too much
     def __init__(
         self,
     ):
@@ -2469,7 +2479,7 @@ class GroundedReward(RewardFunction):
         return player.on_ground is True
 
 
-class AirReward(RewardFunction):
+class AirReward(RewardFunction): #Undetermined: Looks to be the same as In air reward but with a lower reward, so just use INAIR Reward
     def __init__(
         self,
     ):
@@ -2491,3 +2501,4 @@ class AirReward(RewardFunction):
 
 if __name__ == "__main__":
     pass
+
